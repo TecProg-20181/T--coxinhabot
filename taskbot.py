@@ -84,18 +84,28 @@ def deps_text(task, chat, preceed=''):
 
     return text
 
+def get_message(update):
+    if 'message' in update:
+        message = update['message']
+    elif 'edited_message' in update:
+        message = update['edited_message']
+    else:
+        print('Can\'t process! {}'.format(update))
+        return None
+
+    return message
 
 def handle_updates(updates):
     for update in updates["result"]:
-        if 'message' in update:
-            message = update['message']
-        elif 'edited_message' in update:
-            message = update['edited_message']
+        message = get_message(update)
+
+        if message != None:
+            pass
         else:
-            print('Can\'t process! {}'.format(update))
             return
 
         command = message["text"].split(" ", 1)[0]
+
         msg = ''
         if len(message["text"].split(" ", 1)) > 1:
             msg = message["text"].split(" ", 1)[1].strip()
