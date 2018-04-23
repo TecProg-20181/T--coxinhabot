@@ -95,6 +95,11 @@ def get_message(update):
 
     return message
 
+def get_username(message):
+    name = message["chat"]["first_name"]
+
+    return name
+
 def handle_updates(updates):
     for update in updates["result"]:
         message = get_message(update)
@@ -112,7 +117,9 @@ def handle_updates(updates):
 
         chat = message["chat"]["id"]
 
-        print(command, msg, chat)
+        user_name = get_username(message)
+
+        print(command, msg, chat, user_name)
 
         if command == '/new':
             task = Task(chat=chat, name=msg, status='TODO', dependencies='', parents='', priority='')
@@ -128,7 +135,7 @@ def handle_updates(updates):
                 msg = msg.split(' ', 1)[0]
 
             if not msg.isdigit():
-                send_message("You must inform the task id", chat)
+                send_message("Hey " + user_name + ", you must inform the task id", chat)
             else:
                 task_id = int(msg)
                 query = db.session.query(Task).filter_by(id=task_id, chat=chat)
@@ -148,7 +155,7 @@ def handle_updates(updates):
                 send_message("Task {} redefined from {} to {}".format(task_id, old_text, text), chat)
         elif command == '/duplicate':
             if not msg.isdigit():
-                send_message("You must inform the task id", chat)
+                send_message("Hey " + user_name + ", you must inform the task id", chat)
             else:
                 task_id = int(msg)
                 query = db.session.query(Task).filter_by(id=task_id, chat=chat)
@@ -172,7 +179,7 @@ def handle_updates(updates):
 
         elif command == '/delete':
             if not msg.isdigit():
-                send_message("You must inform the task id", chat)
+                send_message("Hey " + user_name + ", you must inform the task id", chat)
             else:
                 task_id = int(msg)
                 query = db.session.query(Task).filter_by(id=task_id, chat=chat)
@@ -191,7 +198,7 @@ def handle_updates(updates):
 
         elif command == '/todo':
             if not msg.isdigit():
-                send_message("You must inform the task id", chat)
+                send_message("Hey " + user_name + ", you must inform the task id", chat)
             else:
                 task_id = int(msg)
                 query = db.session.query(Task).filter_by(id=task_id, chat=chat)
@@ -206,7 +213,7 @@ def handle_updates(updates):
 
         elif command == '/doing':
             if not msg.isdigit():
-                send_message("You must inform the task id", chat)
+                send_message("Hey " + user_name + ", you must inform the task id", chat)
             else:
                 task_id = int(msg)
                 query = db.session.query(Task).filter_by(id=task_id, chat=chat)
@@ -221,7 +228,7 @@ def handle_updates(updates):
 
         elif command == '/done':
             if not msg.isdigit():
-                send_message("You must inform the task id", chat)
+                send_message("Hey " + user_name + ", you must inform the task id", chat)
             else:
                 task_id = int(msg)
                 query = db.session.query(Task).filter_by(id=task_id, chat=chat)
@@ -275,7 +282,7 @@ def handle_updates(updates):
                 msg = msg.split(' ', 1)[0]
 
             if not msg.isdigit():
-                send_message("You must inform the task id", chat)
+                send_message("Hey " + user_name + ", you must inform the task id", chat)
             else:
                 task_id = int(msg)
                 query = db.session.query(Task).filter_by(id=task_id, chat=chat)
@@ -322,7 +329,7 @@ def handle_updates(updates):
                 msg = msg.split(' ', 1)[0]
 
             if not msg.isdigit():
-                send_message("You must inform the task id", chat)
+                send_message("Hey " + user_name + ", you must inform the task id", chat)
             else:
                 task_id = int(msg)
                 query = db.session.query(Task).filter_by(id=task_id, chat=chat)
@@ -350,7 +357,7 @@ def handle_updates(updates):
             send_message("Here is a list of things you can do.", chat)
             send_message(HELP, chat)
         else:
-            send_message("I'm sorry dave. I'm afraid I can't do that.", chat)
+            send_message("I'm sorry " + user_name + ". I'm afraid I can't do that.", chat)
 
 
 def main():
