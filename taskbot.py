@@ -101,6 +101,12 @@ def get_username(message):
 
     return name
 
+def command_new(chat, msg):
+    task = Task(chat=chat, name=msg, status='TODO', dependencies='', parents='', priority='')
+    db.session.add(task)
+    db.session.commit()
+    send_message("New task *TODO* [[{}]] {}".format(task.id, task.name), chat)
+
 def handle_updates(updates):
     for update in updates["result"]:
         message_raw = get_message(update)
@@ -113,25 +119,10 @@ def handle_updates(updates):
 
         print(message.command, message.msg, message.chat, message.user_name)
 
-        command = message["text"].split(" ", 1)[0]
+        if message.command == '/new':
+            command_new(chat, msg)
 
-        msg = ''
-        if len(message["text"].split(" ", 1)) > 1:
-            msg = message["text"].split(" ", 1)[1].strip()
-
-        chat = message["chat"]["id"]
-
-        user_name = get_username(message)
-
-        #print(command, msg, chat, user_name)
-
-        if command == '/new':
-            task = Task(chat=chat, name=msg, status='TODO', dependencies='', parents='', priority='')
-            db.session.add(task)
-            db.session.commit()
-            send_message("New task *TODO* [[{}]] {}".format(task.id, task.name), chat)
-
-        elif command == '/rename':
+        elif message.command == '/rename':
             text = ''
             if msg != '':
                 if len(msg.split(' ', 1)) > 1:
@@ -157,7 +148,7 @@ def handle_updates(updates):
                 task.name = text
                 db.session.commit()
                 send_message("Task {} redefined from {} to {}".format(task_id, old_text, text), chat)
-        elif command == '/duplicate':
+        elif message.command == '/duplicate':
             if not msg.isdigit():
                 send_message("Hey " + user_name + ", you must inform the task id", chat)
             else:
@@ -181,7 +172,7 @@ def handle_updates(updates):
                 db.session.commit()
                 send_message("New task *TODO* [[{}]] {}".format(dtask.id, dtask.name), chat)
 
-        elif command == '/delete':
+        elif message.command == '/delete':
             if not msg.isdigit():
                 send_message("Hey " + user_name + ", you must inform the task id", chat)
             else:
@@ -200,7 +191,7 @@ def handle_updates(updates):
                 db.session.commit()
                 send_message("Task [[{}]] deleted".format(task_id), chat)
 
-        elif command == '/todo':
+        elif message.command == '/todo':
             if not msg.isdigit():
                 send_message("Hey " + user_name + ", you must inform the task id", chat)
             else:
@@ -215,7 +206,7 @@ def handle_updates(updates):
                 db.session.commit()
                 send_message("*TODO* task [[{}]] {}".format(task.id, task.name), chat)
 
-        elif command == '/doing':
+        elif message.command == '/doing':
             if not msg.isdigit():
                 send_message("Hey " + user_name + ", you must inform the task id", chat)
             else:
@@ -230,7 +221,7 @@ def handle_updates(updates):
                 db.session.commit()
                 send_message("*DOING* task [[{}]] {}".format(task.id, task.name), chat)
 
-        elif command == '/done':
+        elif message.command == '/done':
             if not msg.isdigit():
                 send_message("Hey " + user_name + ", you must inform the task id", chat)
             else:
@@ -245,7 +236,7 @@ def handle_updates(updates):
                 db.session.commit()
                 send_message("*DONE* task [[{}]] {}".format(task.id, task.name), chat)
 
-        elif command == '/list':
+        elif message.command == '/list':
             a = ''
 
             a += '\U0001F4CB Task List\n'
@@ -278,7 +269,7 @@ def handle_updates(updates):
                 a += '[[{}]] {}\n'.format(task.id, task.name)
 
             send_message(a, chat)
-        elif command == '/dependson':
+        elif message.command == '/dependson':
             text = ''
             if msg != '':
                 if len(msg.split(' ', 1)) > 1:
@@ -325,7 +316,7 @@ def handle_updates(updates):
 
                 db.session.commit()
                 send_message("Task {} dependencies up to date".format(task_id), chat)
-        elif command == '/priority':
+        elif message.command == '/priority':
             text = ''
             if msg != '':
                 if len(msg.split(' ', 1)) > 1:
@@ -354,14 +345,14 @@ def handle_updates(updates):
                         send_message("*Task {}* priority has priority *{}*".format(task_id, text.lower()), chat)
                 db.session.commit()
 
-        elif command == '/start':
+        elif message.command == '/start':
             send_message("Welcome! Here is a list of things you can do.", chat)
             send_message(HELP, chat)
-        elif command == '/help':
+        elif message.command == '/help':
             send_message("Here is a list of things you can do.", chat)
             send_message(HELP, chat)
         else:
-            send_message("I'm sorry " + user_name + ". I'm afraid I can't do that.", chat)
+            send_message("I'm sorry " + message.user_name + ". I'm afraid I can't do that.", message.chat)
 
 
 def main():
