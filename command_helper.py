@@ -183,3 +183,32 @@ def command_dependson(msg, user_name, chat):
 
         db.session.commit()
         send_message("Task {} dependencies up to date".format(task_id), chat)
+
+def command_priotiry(msg, user_name, chat):
+    text = ''
+    if msg != '':
+        if len(msg.split(' ', 1)) > 1:
+            text = msg.split(' ', 1)[1]
+        msg = msg.split(' ', 1)[0]
+
+    if not msg.isdigit():
+        send_message("Hey " + user_name + ", you must inform the task id", chat)
+    else:
+        task_id = int(msg)
+        query = db.session.query(Task).filter_by(id=task_id, chat=chat)
+        try:
+            task = query.one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            send_message("_404_ Task {} not found x.x".format(task_id), chat)
+            return
+
+        if text == '':
+            task.priority = ''
+            send_message("_Cleared_ all priorities from task {}".format(task_id), chat)
+        else:
+            if text.lower() not in ['high', 'medium', 'low']:
+                send_message("The priority *must be* one of the following: high, medium, low", chat)
+            else:
+                task.priority = text.lower()
+                send_message("*Task {}* priority has priority *{}*".format(task_id, text.lower()), chat)
+        db.session.commit()
