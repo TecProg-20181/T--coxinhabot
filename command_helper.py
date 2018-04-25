@@ -95,3 +95,43 @@ def command_duplicate(msg, user_name, chat):
 
         db.session.commit()
         send_message("New task *TODO* [[{}]] {}".format(dtask.id, dtask.name), chat)
+
+def command_delete(msg, user_name, chat):
+    if not msg.isdigit():
+        send_message("Hey " + user_name + ", you must inform the task id", chat)
+    else:
+        task_id = int(msg)
+        query = db.session.query(Task).filter_by(id=task_id, chat=chat)
+        try:
+            task = query.one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            send_message("_404_ Task {} not found x.x".format(task_id), chat)
+            return
+        for t in task.dependencies.split(',')[:-1]:
+            qy = db.session.query(Task).filter_by(id=int(t), chat=chat)
+            t = qy.one()
+            t.parents = t.parents.replace('{},'.format(task.id), '')
+        db.session.delete(task)
+        db.session.commit()
+        send_message("Task [[{}]] deleted".format(task_id), chat)
+
+def command_status(msg, user_name, chat, command):
+    if not msg.isdigit():
+        send_message("Hey " + user_name + ", you must inform the task id", chat)
+    else:
+        task_id = int(msg)
+        query = db.session.query(Task).filter_by(id=task_id, chat=chat)
+        try:
+            task = query.one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            send_message("_404_ Task {} not found x.x".format(task_id), chat)
+            return
+        if command == '/todo':
+            status = 'TODO'
+        elif command == '/doing':
+            status = 'DOING'
+        elif command == '/done':
+            status = 'DONE'
+        task.status = status
+        db.session.commit()
+        send_message("*" + status + "* task [[{}]] {}".format(task.id, task.name), chat)
