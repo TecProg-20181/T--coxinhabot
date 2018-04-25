@@ -5,6 +5,43 @@ from db import Task
 
 from taskbot import *
 
+def command_handler(message):
+    status = ['/todo', '/doing', '/done']
+
+    if message.command == '/new':
+        command_new(message.chat, message.msg)
+
+    elif message.command == '/rename':
+        command_rename(message.msg, message.user_name, message.chat)
+
+    elif message.command == '/duplicate':
+        command_duplicate(message.msg, message.user_name, message.chat)
+
+    elif message.command == '/delete':
+        command_delete(message.msg, message.user_name, message.chat)
+
+    elif message.command in status:
+        command_status(message.msg, message.user_name, message.chat, message.command)
+
+    elif message.command == '/list':
+        command_list(message.chat)
+
+    elif message.command == '/dependson':
+        command_dependson(message.msg, message.user_name, message.chat)
+
+    elif message.command == '/priority':
+        command_priotiry(message.msg, message.user_name, message.chat)
+
+    elif message.command == '/start':
+        send_message("Welcome! Here is a list of things you can do.", message.chat)
+        send_message(HELP, message.chat)
+    elif message.command == '/help':
+        send_message("Here is a list of things you can do.", message.chat)
+        send_message(HELP, message.chat)
+    else:
+        send_message("I'm sorry " + message.user_name + ". I'm afraid I can't do that.", message.chat)
+
+
 def command_new(chat, msg):
     task = Task(chat=chat, name=msg, status='TODO', dependencies='', parents='', priority='')
     db.session.add(task)
