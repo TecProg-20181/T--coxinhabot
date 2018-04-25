@@ -8,6 +8,7 @@ import sqlalchemy
 
 from keepToken import *
 from message import *
+from command_helper import *
 
 import db
 from db import Task
@@ -96,17 +97,6 @@ def get_message(update):
 
     return message
 
-def get_username(message):
-    name = message["chat"]["first_name"]
-
-    return name
-
-def command_new(chat, msg):
-    task = Task(chat=chat, name=msg, status='TODO', dependencies='', parents='', priority='')
-    db.session.add(task)
-    db.session.commit()
-    send_message("New task *TODO* [[{}]] {}".format(task.id, task.name), chat)
-
 def handle_updates(updates):
     for update in updates["result"]:
         message_raw = get_message(update)
@@ -120,34 +110,11 @@ def handle_updates(updates):
         print(message.command, message.msg, message.chat, message.user_name)
 
         if message.command == '/new':
-            command_new(chat, msg)
+            command_new(message.chat, message.msg)
 
         elif message.command == '/rename':
-            text = ''
-            if msg != '':
-                if len(msg.split(' ', 1)) > 1:
-                    text = msg.split(' ', 1)[1]
-                msg = msg.split(' ', 1)[0]
+            command_rename(message.msg, message.user_name, message.chat)
 
-            if not msg.isdigit():
-                send_message("Hey " + user_name + ", you must inform the task id", chat)
-            else:
-                task_id = int(msg)
-                query = db.session.query(Task).filter_by(id=task_id, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(task_id), chat)
-                    return
-
-                if text == '':
-                    send_message("You want to modify task {}, but you didn't provide any new text".format(task_id), chat)
-                    return
-
-                old_text = task.name
-                task.name = text
-                db.session.commit()
-                send_message("Task {} redefined from {} to {}".format(task_id, old_text, text), chat)
         elif message.command == '/duplicate':
             if not msg.isdigit():
                 send_message("Hey " + user_name + ", you must inform the task id", chat)

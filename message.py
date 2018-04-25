@@ -13,6 +13,8 @@ class Message:
         else:
             self.msg = ''
 
+
+
         self.chat = message_raw["chat"]["id"]
         self.user_name = message_raw["chat"]["first_name"]
 
