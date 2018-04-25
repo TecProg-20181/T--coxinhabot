@@ -37,3 +37,37 @@ def command_rename(msg, user_name, chat):
         task.name = text
         db.session.commit()
         send_message("Task {} redefined from {} to {}".format(task_id, old_text, text), chat)
+
+def command_list(chat):
+    a = ''
+
+    a += '\U0001F4CB Task List\n'
+    query = db.session.query(Task).filter_by(parents='', chat=chat).order_by(Task.id)
+    for task in query.all():
+        icon = '\U0001F195'
+        if task.status == 'DOING':
+            icon = '\U000023FA'
+        elif task.status == 'DONE':
+            icon = '\U00002611'
+
+        a += '[[{}]] {} {}\n'.format(task.id, icon, task.name)
+        a += deps_text(task, chat)
+
+    send_message(a, chat)
+    a = ''
+
+    a += '\U0001F4DD _Status_\n'
+    query = db.session.query(Task).filter_by(status='TODO', chat=chat).order_by(Task.id)
+    a += '\n\U0001F195 *TODO*\n'
+    for task in query.all():
+        a += '[[{}]] {}\n'.format(task.id, task.name)
+    query = db.session.query(Task).filter_by(status='DOING', chat=chat).order_by(Task.id)
+    a += '\n\U000023FA *DOING*\n'
+    for task in query.all():
+        a += '[[{}]] {}\n'.format(task.id, task.name)
+    query = db.session.query(Task).filter_by(status='DONE', chat=chat).order_by(Task.id)
+    a += '\n\U00002611 *DONE*\n'
+    for task in query.all():
+        a += '[[{}]] {}\n'.format(task.id, task.name)
+
+    send_message(a, chat)
