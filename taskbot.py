@@ -7,6 +7,7 @@ import urllib
 import sqlalchemy
 
 from keepToken import *
+from message import *
 
 import db
 from db import Task
@@ -102,12 +103,15 @@ def get_username(message):
 
 def handle_updates(updates):
     for update in updates["result"]:
-        message = get_message(update)
+        message_raw = get_message(update)
+        message = Message(message_raw)
 
-        if message != None:
+        if message.not_none:
             pass
         else:
             return
+
+        print(message.command, message.msg, message.chat, message.user_name)
 
         command = message["text"].split(" ", 1)[0]
 
@@ -119,7 +123,7 @@ def handle_updates(updates):
 
         user_name = get_username(message)
 
-        print(command, msg, chat, user_name)
+        #print(command, msg, chat, user_name)
 
         if command == '/new':
             task = Task(chat=chat, name=msg, status='TODO', dependencies='', parents='', priority='')
