@@ -129,52 +129,8 @@ def handle_updates(updates):
             command_list(message.chat)
 
         elif message.command == '/dependson':
-            text = ''
-            if msg != '':
-                if len(msg.split(' ', 1)) > 1:
-                    text = msg.split(' ', 1)[1]
-                msg = msg.split(' ', 1)[0]
+            command_dependson(message.msg, message.user_name, message.chat)
 
-            if not msg.isdigit():
-                send_message("Hey " + user_name + ", you must inform the task id", chat)
-            else:
-                task_id = int(msg)
-                query = db.session.query(Task).filter_by(id=task_id, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(task_id), chat)
-                    return
-
-                if text == '':
-                    for i in task.dependencies.split(',')[:-1]:
-                        i = int(i)
-                        q = db.session.query(Task).filter_by(id=i, chat=chat)
-                        t = q.one()
-                        t.parents = t.parents.replace('{},'.format(task.id), '')
-
-                    task.dependencies = ''
-                    send_message("Dependencies removed from task {}".format(task_id), chat)
-                else:
-                    for depid in text.split(' '):
-                        if not depid.isdigit():
-                            send_message("All dependencies ids must be numeric, and not {}".format(depid), chat)
-                        else:
-                            depid = int(depid)
-                            query = db.session.query(Task).filter_by(id=depid, chat=chat)
-                            try:
-                                taskdep = query.one()
-                                taskdep.parents += str(task.id) + ','
-                            except sqlalchemy.orm.exc.NoResultFound:
-                                send_message("_404_ Task {} not found x.x".format(depid), chat)
-                                continue
-
-                            deplist = task.dependencies.split(',')
-                            if str(depid) not in deplist:
-                                task.dependencies += str(depid) + ','
-
-                db.session.commit()
-                send_message("Task {} dependencies up to date".format(task_id), chat)
         elif message.command == '/priority':
             text = ''
             if msg != '':
