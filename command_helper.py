@@ -4,6 +4,7 @@ import db
 from db import Task
 
 from taskbot import *
+from help import Help
 
 def command_handler(message):
     status = ['/todo', '/doing', '/done']
@@ -33,11 +34,15 @@ def command_handler(message):
         command_priotiry(message.msg, message.user_name, message.chat)
 
     elif message.command == '/start':
+        helper = Help();
         send_message("Welcome! Here is a list of things you can do.", message.chat)
-        send_message(HELP, message.chat)
+        send_message(helper.get_help(), message.chat)
     elif message.command == '/help':
+        helper = Help();
         send_message("Here is a list of things you can do.", message.chat)
-        send_message(HELP, message.chat)
+        send_message(helper.get_help(), message.chat)
+    elif message.command == '/showPriority':
+        command_show_priority(message.chat)    
     else:
         send_message("I'm sorry " + message.user_name + ". I'm afraid I can't do that.", message.chat)
 
@@ -249,3 +254,22 @@ def command_priotiry(msg, user_name, chat):
                 task.priority = text.lower()
                 send_message("*Task {}* priority has priority *{}*".format(task_id, text.lower()), chat)
         db.session.commit()
+
+def command_show_priority(chat):
+    a = ''
+
+    a += '\U0001F4DD _Status_\n'
+    query = db.session.query(Task).filter_by(priority='low', chat=chat).order_by(Task.id)
+    a += '\n\U0001F195 *low*\n'
+    for task in query.all():
+        a += '[[{}]] {}\n'.format(task.id, task.name)
+    query = db.session.query(Task).filter_by(priority='medium', chat=chat).order_by(Task.id)
+    a += '\n\U000023FA *medium*\n'
+    for task in query.all():
+        a += '[[{}]] {}\n'.format(task.id, task.name)
+    query = db.session.query(Task).filter_by(priority='high', chat=chat).order_by(Task.id)
+    a += '\n\U00002611 *high*\n'
+    for task in query.all():
+        a += '[[{}]] {}\n'.format(task.id, task.name)
+
+    send_message(a, chat)
