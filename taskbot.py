@@ -27,6 +27,7 @@ HELP = """
  /dependson ID ID...
  /duplicate ID
  /priority ID PRIORITY{low, medium, high}
+ /show_priority 
  /help
 """
 
