@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import db
+import pip
 from db import Task
 
 from taskbot import *
@@ -159,25 +160,27 @@ def command_delete(msg, user_name, chat):
         send_message("Task [[{}]] deleted".format(task_id), chat)
 
 def command_status(msg, user_name, chat, command):
-    if not msg.isdigit():
+    list_id = msg.split(" ")
+    if not msg[0].isdigit():
         send_message("Hey " + user_name + ", you must inform the task id", chat)
     else:
-        task_id = int(msg)
-        query = db.session.query(Task).filter_by(id=task_id, chat=chat)
-        try:
-            task = query.one()
-        except sqlalchemy.orm.exc.NoResultFound:
-            send_message("_404_ Task {} not found x.x".format(task_id), chat)
-            return
-        if command == '/todo':
-            status = 'TODO'
-        elif command == '/doing':
-            status = 'DOING'
-        elif command == '/done':
-            status = 'DONE'
-        task.status = status
-        db.session.commit()
-        send_message("*" + status + "* task [[{}]] {}".format(task.id, task.name), chat)
+        for id in list_id:
+            task_id = int(id)
+            query = db.session.query(Task).filter_by(id=task_id, chat=chat)
+            try:
+                task = query.one()
+            except sqlalchemy.orm.exc.NoResultFound:
+                send_message("_404_ Task {} not found x.x".format(task_id), chat)
+                return
+            if command == '/todo':
+                status = 'TODO'
+            elif command == '/doing':
+                status = 'DOING'
+            elif command == '/done':
+                status = 'DONE'
+            task.status = status
+            db.session.commit()
+            send_message("*" + status + "* task [[{}]] {}".format(task.id, task.name), chat)
 
 def command_dependson(msg, user_name, chat):
     text = ''
@@ -261,15 +264,15 @@ def command_show_priority(chat):
 
     a += '\U0001F4DD _Status_\n'
     query = db.session.query(Task).filter_by(priority='low', chat=chat).order_by(Task.id)
-    a += '\n\U0001F195 *low*\n'
+    a += '\n *low*\n'
     for task in query.all():
         a += '[[{}]] {}\n'.format(task.id, task.name)
     query = db.session.query(Task).filter_by(priority='medium', chat=chat).order_by(Task.id)
-    a += '\n\U000023FA *medium*\n'
+    a += '\n *medium*\n'
     for task in query.all():
         a += '[[{}]] {}\n'.format(task.id, task.name)
     query = db.session.query(Task).filter_by(priority='high', chat=chat).order_by(Task.id)
-    a += '\n\U00002611 *high*\n'
+    a += '\n *high*\n'
     for task in query.all():
         a += '[[{}]] {}\n'.format(task.id, task.name)
 
