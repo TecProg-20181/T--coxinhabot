@@ -42,7 +42,8 @@ def command_handler(message):
         send_message("Here is a list of things you can do.", message.chat)
         send_message(helper.get_help(), message.chat)
     elif message.command == '/showPriority':
-        command_show_priority(message.chat)    
+        command_show_priority(message.chat)
+            
     else:
         send_message("I'm sorry " + message.user_name + ". I'm afraid I can't do that.", message.chat)
 
