@@ -6,6 +6,8 @@ from db import Task
 class Message:
 
     def __init__(self, message_raw):
+        type = ''
+
         try:
             temp = message_raw["text"]
             type = 'text'
