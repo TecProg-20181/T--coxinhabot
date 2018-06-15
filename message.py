@@ -6,14 +6,42 @@ from db import Task
 class Message:
 
     def __init__(self, message_raw):
-        self.command = message_raw["text"].split(" ", 1)[0]
+        try:
+            temp = message_raw["text"]
+            type = 'text'
+        except KeyError:
+            pass
+        try:
+            temp = message_raw["voice"]
+            type = 'voice'
+        except KeyError:
+            pass
+        try:
+            temp = message_raw["location"]
+            type = 'location'
+        except KeyError:
+            pass
+        try:
+            temp = message_raw["image"]
+            type = 'image'
+        except KeyError:
+            pass
+        try:
+            temp = message_raw["contact"]
+            type = 'contact'
+        except KeyError:
+            pass
 
-        if len(message_raw["text"].split(" ", 1)) > 1:
-            self.msg = message_raw["text"].split(" ", 1)[1].strip()
+        if type == 'text':
+            self.command = message_raw["text"].split(" ", 1)[0]
+
+            if len(message_raw["text"].split(" ", 1)) > 1:
+                self.msg = message_raw["text"].split(" ", 1)[1].strip()
+            else:
+                self.msg = ''
         else:
-            self.msg = ''
-
-
+            self.command = 'other'
+            self.msg = 'none'
 
         self.chat = message_raw["chat"]["id"]
         self.user_name = message_raw["chat"]["first_name"]
