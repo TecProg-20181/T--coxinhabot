@@ -16,20 +16,6 @@ from db import Task
 TOKEN = getToken()
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
-HELP = """
- /new NOME
- /todo ID
- /doing ID
- /done ID
- /delete ID
- /list
- /rename ID NOME
- /dependson ID ID...
- /duplicate ID
- /priority ID PRIORITY{low, medium, high}
- /help
-"""
-
 def get_url(url):
     response = requests.get(url)
     content = response.content.decode("utf8")
