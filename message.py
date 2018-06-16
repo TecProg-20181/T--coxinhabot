@@ -3,42 +3,51 @@
 import db
 from db import Task
 
+
 class Message:
 
     def __init__(self, message_raw):
-        type = ''
 
-        try:
-            temp = message_raw["text"]
+        if 'text' in message_raw:
+            message_type = message_raw["text"]
             type = 'text'
-        except KeyError:
-            pass
-        try:
-            temp = message_raw["voice"]
+
+        elif 'voice' in message_raw:
+            message_type = message_raw["voice"]
             type = 'voice'
-        except KeyError:
-            pass
-        try:
-            temp = message_raw["location"]
+
+        elif 'location' in message_raw:
+            message_type = message_raw["location"]
             type = 'location'
-        except KeyError:
-            pass
-        try:
-            temp = message_raw["image"]
+
+        elif 'image' in message_raw:
+            message_type = message_raw["image"]
             type = 'image'
-        except KeyError:
-            pass
-        try:
-            temp = message_raw["contact"]
+
+        elif 'photo' in message_raw:
+            message_type = message_raw["photo"]
+            type = 'photo'
+
+        elif 'contact' in message_raw:
+            message_type = message_raw["contact"]
             type = 'contact'
-        except KeyError:
+
+        elif 'document' in message_raw:
+            message_type = message_raw["document"]
+            type = 'document'
+
+        elif 'sticker' in message_raw:
+            message_type = message_raw["sticker"]
+            type = 'sticker'
+
+        else:
             pass
 
         if type == 'text':
-            self.command = message_raw["text"].split(" ", 1)[0]
+            self.command = message_type.split(" ", 1)[0]
 
-            if len(message_raw["text"].split(" ", 1)) > 1:
-                self.msg = message_raw["text"].split(" ", 1)[1].strip()
+            if len(message_type.split(" ", 1)) > 1:
+                self.msg = message_type.split(" ", 1)[1].strip()
             else:
                 self.msg = ''
         else:
