@@ -1,7 +1,6 @@
 import db
 from db import Task
 from taskbot import *
-from service import Service
 
 
 class Command(object):
@@ -247,3 +246,19 @@ class Command(object):
             a += '[[{}]] {}\n'.format(task.id, task.name)
 
         send_message(a, chat)
+
+    def check_parent(self, task, to_check, chat):
+        if not task.parents == '':
+            parent_id = task.parents.split(',')
+            parent_id.pop()
+
+            index = [int(id) for id in parent_id]
+
+            if to_check in index:
+                return False
+            else:
+                parent = db.session.query(Task).filter_by(id=index[0], chat=chat)
+                parent = parent.one()
+                return self.check_parent(parent, to_check, chat)
+
+        return True
