@@ -1,15 +1,28 @@
 import db
-from db import Task
+from db import Task 
+import json
+import requests
+import keepLoginGithub
 from taskbot import *
+from datetime import datetime
 
 
 class Command(object):
 
     def command_new(self, chat, msg):
-        task = Task(chat=chat, name=msg, status='TODO', dependencies='', parents='', priority='')
+
+        duedate = self.get_duedate(msg)
+
+        if isinstance(duedate, str):
+            task = Task(chat=chat, name=msg, status='TODO', dependencies='', parents='', priority='')
+            self.create_issues_in_github(msg, chat)
+        else:
+            task = Task(chat=chat, name=msg[:-10], status='TODO', dependencies='', parents='', priority='', duedate=duedate)
+            self.create_issues_in_github(msg[:-10], chat)
+
         db.session.add(task)
         db.session.commit()
-        send_message("New task *TODO* [[{}]] {}".format(task.id, task.name), chat)
+        send_message("New task *TODO* [[{}]] {}, data de entrega {}".format(task.id, task.name, task.duedate), chat)
 
     def command_rename(self, msg, user_name, chat):
         text = ''
@@ -50,7 +63,7 @@ class Command(object):
             elif task.status == 'DONE':
                 icon = '\U00002611'
 
-            a += '[[{}]] {} {}\n'.format(task.id, icon, task.name)
+            a += '[[{}]] {} {}, data entrega {}\n'.format(task.id, icon, task.name, task.duedate)
             a += deps_text(task, chat)
 
         send_message(a, chat)
@@ -60,15 +73,15 @@ class Command(object):
         query = db.session.query(Task).filter_by(status='TODO', chat=chat).order_by(Task.id)
         a += '\n\U0001F195 *TODO*\n'
         for task in query.all():
-            a += '[[{}]] {}\n'.format(task.id, task.name)
+            a += '[[{}]] {}, data entrega {}\n'.format(task.id, task.name, task.duedate)
         query = db.session.query(Task).filter_by(status='DOING', chat=chat).order_by(Task.id)
         a += '\n\U000023FA *DOING*\n'
         for task in query.all():
-            a += '[[{}]] {}\n'.format(task.id, task.name)
+            a += '[[{}]] {}, data entrega {}\n'.format(task.id, task.name, task.duedate)
         query = db.session.query(Task).filter_by(status='DONE', chat=chat).order_by(Task.id)
         a += '\n\U00002611 *DONE*\n'
         for task in query.all():
-            a += '[[{}]] {}\n'.format(task.id, task.name)
+            a += '[[{}]] {}, entregue na data {}\n'.format(task.id, task.name, task.duedate)
 
         send_message(a, chat)
 
@@ -258,3 +271,28 @@ class Command(object):
                 return self.check_parent(parent, to_check, chat)
 
         return True
+
+    def get_duedate(self, msg):
+
+        duedate = ''
+
+        if len(msg) > 10:
+            date = msg[-10::]
+            try:
+                duedate = datetime.strptime(date, "%d/%m/%Y").date()
+            except ValueError:
+                pass
+
+        return duedate         
+
+    def create_issues_in_github(self, title, chat):
+        url='https://api.github.com/repos/TecProg-20181/T--Coxinhabot/issues'
+        session = requests.Session()
+        login = keepLoginGithub.getLogin()
+        session.auth = (login[0], login[1])
+        issue = {'title':title}
+        postIssue = session.post(url, json.dumps(issue))
+        if postIssue.status_code == 201:
+            send_message('Successfully created issue {0:s}'.format(title), chat)
+        else:
+            send_message('Could not create issue {0:s}'.format(title), chat)
