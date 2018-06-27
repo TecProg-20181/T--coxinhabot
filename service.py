@@ -13,6 +13,7 @@ from command_helper import *
 import db
 from db import Task
 
+
 class Service(object):
 
     TOKEN = getToken()
@@ -98,3 +99,18 @@ class Service(object):
             print(message.command, message.msg, message.chat, message.user_name)
 
             command_handler(message)
+
+    def check_parent(task, to_check, chat):
+        if not task.parents == '':
+            parent_id = task.parents.split(',')
+            parent_id.pop()
+
+            index = [int(id) for id in parent_id]
+
+            if to_check in index:
+                return False
+            else:
+                parent = self.query_one(index[0], chat)
+                return self.search_parent(parent, to_check, chat)
+
+        return True
