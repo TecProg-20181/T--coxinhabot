@@ -58,7 +58,7 @@ class Command(object):
             elif task.status == 'DONE':
                 icon = '\U00002611'
 
-            a += '[[{}]] {} {}\n'.format(task.id, icon, task.name)
+            a += '[[{}]] {} {}, data entrega {}\n'.format(task.id, icon, task.name, task.duedate)
             a += deps_text(task, chat)
 
         send_message(a, chat)
@@ -68,15 +68,15 @@ class Command(object):
         query = db.session.query(Task).filter_by(status='TODO', chat=chat).order_by(Task.id)
         a += '\n\U0001F195 *TODO*\n'
         for task in query.all():
-            a += '[[{}]] {}\n'.format(task.id, task.name)
+            a += '[[{}]] {}, data entrega {}\n'.format(task.id, task.name, task.duedate)
         query = db.session.query(Task).filter_by(status='DOING', chat=chat).order_by(Task.id)
         a += '\n\U000023FA *DOING*\n'
         for task in query.all():
-            a += '[[{}]] {}\n'.format(task.id, task.name)
+            a += '[[{}]] {}, data entrega {}\n'.format(task.id, task.name, task.duedate)
         query = db.session.query(Task).filter_by(status='DONE', chat=chat).order_by(Task.id)
         a += '\n\U00002611 *DONE*\n'
         for task in query.all():
-            a += '[[{}]] {}\n'.format(task.id, task.name)
+            a += '[[{}]] {}, entregue na data {}\n'.format(task.id, task.name, task.duedate)
 
         send_message(a, chat)
 
