@@ -13,6 +13,7 @@ from command_helper import *
 import db
 from db import Task
 
+
 class Service(object):
 
     TOKEN = getToken()

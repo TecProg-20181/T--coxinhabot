@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-
 import db
 import pip
 from db import Task
-
 from taskbot import *
 from help import Help
 from command import Command
+
 
 def command_handler(message):
     status = ['/todo', '/doing', '/done']
@@ -46,10 +45,6 @@ def command_handler(message):
         send_message(helper.get_help(), message.chat)
     elif message.command == '/showPriority':
         command_bot.command_show_priority(message.chat)
-            
+
     else:
         send_message("I'm sorry " + message.user_name + ". I'm afraid I can't do that.", message.chat)
-
-
-
-
