@@ -3,7 +3,7 @@
 class Help(object):
 
 	HELP = """
-	 /new NOME
+	 /new NOME DATA
 	 /todo ID
 	 /doing ID
 	 /done ID

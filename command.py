@@ -1,15 +1,23 @@
 import db
 from db import Task
 from taskbot import *
+from datetime import datetime
 
 
 class Command(object):
 
     def command_new(self, chat, msg):
-        task = Task(chat=chat, name=msg, status='TODO', dependencies='', parents='', priority='')
+
+        duedate = self.get_duedate(msg)
+
+        if isinstance(duedate, str):
+            task = Task(chat=chat, name=msg, status='TODO', dependencies='', parents='', priority='')
+        else:
+            task = Task(chat=chat, name=msg[:-10], status='TODO', dependencies='', parents='', priority='', duedate=duedate)
+
         db.session.add(task)
         db.session.commit()
-        send_message("New task *TODO* [[{}]] {}".format(task.id, task.name), chat)
+        send_message("New task *TODO* [[{}]] {}, data de entrega {}".format(task.id, task.name, task.duedate), chat)
 
     def command_rename(self, msg, user_name, chat):
         text = ''
@@ -258,3 +266,16 @@ class Command(object):
                 return self.check_parent(parent, to_check, chat)
 
         return True
+
+    def get_duedate(self, msg):
+
+        duedate = ''
+
+        if len(msg) > 10:
+            date = msg[-10::]
+            try:
+                duedate = datetime.strptime(date, "%d/%m/%Y").date()
+            except ValueError:
+                pass
+
+        return duedate         
