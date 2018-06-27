@@ -191,10 +191,6 @@ class Command(object):
                             updated_task = False
                             continue
 
-                        deplist = task.dependencies.split(',')
-                        if str(depid) not in deplist:
-                            task.dependencies += str(depid) + ','
-
             db.session.commit()
             if updated_task:
                 send_message("Task {} dependencies up to date".format(task_id), chat)
