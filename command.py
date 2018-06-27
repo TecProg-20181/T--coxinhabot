@@ -1,7 +1,7 @@
-
 import db
 from db import Task
 from taskbot import *
+from service import Service
 
 
 class Command(object):
@@ -148,7 +148,7 @@ class Command(object):
 
         if not msg.isdigit():
             send_message("Hey " + user_name + ", you must inform the task id", chat)
-
+        else:
             task_id = int(msg)
             query = db.session.query(Task).filter_by(id=task_id, chat=chat)
             try:
@@ -175,7 +175,12 @@ class Command(object):
                         query = db.session.query(Task).filter_by(id=depid, chat=chat)
                         try:
                             taskdep = query.one()
-                            taskdep.parents += str(task.id) + ','
+
+                            if Service.search_parent(task, taskdep.id, chat):
+                                taskdep.parents += str(task.id) + ','
+                            else:
+                                send_message("Sorry " + user_name + ", this task already depends on another task.", chat)
+
                         except sqlalchemy.orm.exc.NoResultFound:
                             send_message("_404_ Task {} not found x.x".format(depid), chat)
                             continue
