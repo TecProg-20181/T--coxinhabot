@@ -149,6 +149,7 @@ class Command(object):
         if not msg.isdigit():
             send_message("Hey " + user_name + ", you must inform the task id", chat)
         else:
+            updated_task = True
             task_id = int(msg)
             query = db.session.query(Task).filter_by(id=task_id, chat=chat)
             try:
@@ -176,13 +177,19 @@ class Command(object):
                         try:
                             taskdep = query.one()
 
-                            if Service.search_parent(task, taskdep.id, chat):
+                            if self.check_parent(task, taskdep.id, chat):
                                 taskdep.parents += str(task.id) + ','
+                                updated_task = True
+                                deplist = task.dependencies.split(',')
+                                if str(depid) not in deplist:
+                                    task.dependencies += str(depid) + ','
                             else:
                                 send_message("Sorry " + user_name + ", this task already depends on another task.", chat)
+                                updated_task = False
 
                         except sqlalchemy.orm.exc.NoResultFound:
                             send_message("_404_ Task {} not found x.x".format(depid), chat)
+                            updated_task = False
                             continue
 
                         deplist = task.dependencies.split(',')
@@ -190,7 +197,8 @@ class Command(object):
                             task.dependencies += str(depid) + ','
 
             db.session.commit()
-            send_message("Task {} dependencies up to date".format(task_id), chat)
+            if updated_task:
+                send_message("Task {} dependencies up to date".format(task_id), chat)
 
     def command_priotiry(self, msg, user_name, chat):
         text = ''
