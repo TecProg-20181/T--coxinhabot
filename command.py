@@ -47,9 +47,16 @@ class Command(object):
                 return
 
             old_text = task.name
-            task.name = text
+
+            duedate = self.get_duedate(text)
+            if isinstance(duedate, str):
+                task.name = text
+            else:
+                task.name = text[:-10]
+                task.duedate = duedate
+
             db.session.commit()
-            send_message("Task {} redefined from {} to {}".format(task_id, old_text, text), chat)
+            send_message("Task {} redefined from {} to {}, data entrega {}".format(task_id, old_text, task.name, task.duedate), chat)
 
     def command_list(self, chat):
         a = ''
