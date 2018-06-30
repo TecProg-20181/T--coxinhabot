@@ -5,10 +5,13 @@ import requests
 import keepLoginGithub
 from taskbot import *
 from datetime import datetime
+from contracts import contract, new_contract
 
 
 class Command(object):
 
+    new_contract('validate_msg', lambda msg: isinstance(msg, str) and len(msg)>=2)
+    @contract(chat='int, > 1', msg='validate_msg')
     def command_new(self, chat, msg):
 
         duedate = self.get_duedate(msg)
@@ -24,6 +27,9 @@ class Command(object):
         db.session.commit()
         send_message("New task *TODO* [[{}]] {}, data de entrega {}".format(task.id, task.name, task.duedate), chat)
 
+    
+    new_contract('validate_user_name', lambda user_name: isinstance(user_name, str) and len(user_name)>=2)
+    @contract(chat='int, > 1', msg='validate_msg', user_name='validate_user_name')    
     def command_rename(self, msg, user_name, chat):
         text = ''
         if msg != '':
@@ -54,10 +60,11 @@ class Command(object):
             else:
                 task.name = text[:-10]
                 task.duedate = duedate
-
+            print(isinstance(chat, int))    
             db.session.commit()
             send_message("Task {} redefined from {} to {}, data entrega {}".format(task_id, old_text, task.name, task.duedate), chat)
 
+    @contract(chat='int, > 1')        
     def command_list(self, chat):
         a = ''
 
@@ -92,6 +99,7 @@ class Command(object):
 
         send_message(a, chat)
 
+    @contract(chat='int, > 1', msg='validate_msg', user_name='validate_user_name')    
     def command_duplicate(self, msg, user_name, chat):
         if not msg.isdigit():
             send_message("Hey " + user_name + ", you must inform the task id", chat)
@@ -116,6 +124,7 @@ class Command(object):
             db.session.commit()
             send_message("New task *TODO* [[{}]] {}".format(dtask.id, dtask.name), chat)
 
+    @contract(chat='int, > 1', msg='validate_msg', user_name='validate_user_name')
     def command_delete(self, msg, user_name, chat):
         if not msg.isdigit():
             send_message("Hey " + user_name + ", you must inform the task id", chat)
@@ -135,6 +144,8 @@ class Command(object):
             db.session.commit()
             send_message("Task [[{}]] deleted".format(task_id), chat)
 
+    new_contract('validate_command', lambda command: isinstance(command, str) and len(command) >= 4)
+    @contract(chat='int, > 1', msg='validate_msg', user_name='validate_user_name', command='validate_command')
     def command_status(self, msg, user_name, chat, command):
         list_id = msg.split(" ")
         if not msg[0].isdigit():
@@ -158,6 +169,7 @@ class Command(object):
                 db.session.commit()
                 send_message("*" + status + "* task [[{}]] {}".format(task.id, task.name), chat)
 
+    @contract(chat='int, > 1', msg='validate_msg', user_name='validate_user_name')
     def command_dependson(self, msg, user_name, chat):
         text = ''
         if msg != '':
@@ -215,6 +227,7 @@ class Command(object):
             if updated_task:
                 send_message("Task {} dependencies up to date".format(task_id), chat)
 
+    @contract(chat='int, > 1', msg='validate_msg', user_name='validate_user_name')
     def command_priotiry(self, msg, user_name, chat):
         text = ''
         if msg != '':
@@ -244,6 +257,7 @@ class Command(object):
                     send_message("*Task {}* priority has priority *{}*".format(task_id, text.lower()), chat)
             db.session.commit()
 
+    @contract(chat='int, > 1')
     def command_show_priority(self, chat):
         a = ''
 
@@ -279,6 +293,7 @@ class Command(object):
 
         return True
 
+    @contract(msg='validate_msg')
     def get_duedate(self, msg):
 
         duedate = ''
@@ -292,6 +307,8 @@ class Command(object):
 
         return duedate         
 
+    new_contract('validate_title', lambda title: isinstance(title, str) and len(title)>=2)
+    @contract(chat='int, > 1', title='validate_title')
     def create_issues_in_github(self, title, chat):
         url='https://api.github.com/repos/TecProg-20181/T--Coxinhabot/issues'
         session = requests.Session()
